@@ -14,72 +14,73 @@ const VERIFY_TOKEN = "kona_verify_2026";
 
 app.get("/webhook", (req, res) => {
 
-const mode = req.query["hub.mode"];
-const token = req.query["hub.verify_token"];
-const challenge = req.query["hub.challenge"];
+  const mode = req.query["hub.mode"];
+  const token = req.query["hub.verify_token"];
+  const challenge = req.query["hub.challenge"];
 
-if (
-mode === "subscribe" &&
-token === VERIFY_TOKEN
-) {
-console.log("✅ Webhook verificado");
-return res.status(200).send(challenge);
-}
+  if (
+    mode === "subscribe" &&
+    token === VERIFY_TOKEN
+  ) {
+    console.log("✅ Webhook verificado");
+    return res.status(200).send(challenge);
+  }
 
-res.sendStatus(403);
-app.post("/webhook", async (req, res) => {
-
-try {
-
-```
-const mensaje =
-  req.body.entry?.[0]
-  ?.changes?.[0]
-  ?.value?.messages?.[0];
-
-if (!mensaje) {
-  return res.sendStatus(200);
-}
-
-const numero = mensaje.from;
-const texto = mensaje.text?.body || "";
-
-console.log(
-  "📩 Mensaje recibido:",
-  numero,
-  texto
-);
-
-const respuesta =
-  await obtenerRespuesta(texto);
-
-const textoRespuesta =
-  typeof respuesta === "object"
-    ? respuesta.texto
-    : respuesta;
-
-await enviarWhatsApp(
-  numero,
-  textoRespuesta
-);
-
-res.sendStatus(200);
-```
-
-} catch (error) {
-
-```
-console.error(
-  "❌ Error webhook:",
-  error
-);
-
-res.sendStatus(500);
-```
-
-}
+  res.sendStatus(403);
 
 });
+
+// RECIBIR MENSAJES DE WHATSAPP
+
+app.post("/webhook", async (req, res) => {
+
+  console.log("📩 WEBHOOK RECIBIDO");
+
+  try {
+
+    const mensaje =
+      req.body.entry?.[0]
+        ?.changes?.[0]
+        ?.value?.messages?.[0];
+
+    if (!mensaje) {
+      return res.sendStatus(200);
+    }
+
+    const numero = mensaje.from;
+    const texto = mensaje.text?.body || "";
+
+    console.log(
+      "📩 Mensaje recibido:",
+      numero,
+      texto
+    );
+
+    const respuesta =
+      await obtenerRespuesta(texto);
+
+    const textoRespuesta =
+      typeof respuesta === "object"
+        ? respuesta.texto
+        : respuesta;
+
+    await enviarWhatsApp(
+      numero,
+      textoRespuesta
+    );
+
+    return res.sendStatus(200);
+
+  } catch (error) {
+
+    console.error(
+      "❌ Error webhook:",
+      error
+    );
+
+    return res.sendStatus(500);
+
+  }
 
 });
 
