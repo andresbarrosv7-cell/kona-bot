@@ -1,3 +1,4 @@
+const enviarWhatsApp = require("./whatsapp");
 const express = require("express");
 const respuestas = require("./respuestas");
 const preguntarGemini = require("./gemini");
@@ -26,6 +27,59 @@ return res.status(200).send(challenge);
 }
 
 res.sendStatus(403);
+app.post("/webhook", async (req, res) => {
+
+try {
+
+```
+const mensaje =
+  req.body.entry?.[0]
+  ?.changes?.[0]
+  ?.value?.messages?.[0];
+
+if (!mensaje) {
+  return res.sendStatus(200);
+}
+
+const numero = mensaje.from;
+const texto = mensaje.text?.body || "";
+
+console.log(
+  "📩 Mensaje recibido:",
+  numero,
+  texto
+);
+
+const respuesta =
+  await obtenerRespuesta(texto);
+
+const textoRespuesta =
+  typeof respuesta === "object"
+    ? respuesta.texto
+    : respuesta;
+
+await enviarWhatsApp(
+  numero,
+  textoRespuesta
+);
+
+res.sendStatus(200);
+```
+
+} catch (error) {
+
+```
+console.error(
+  "❌ Error webhook:",
+  error
+);
+
+res.sendStatus(500);
+```
+
+}
+
+});
 
 });
 
