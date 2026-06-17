@@ -11,7 +11,10 @@ app.use(express.static("public"));
 const VERIFY_TOKEN = "kona_verify_2026";
 
 // WEBHOOK META
-
+console.log(
+  "🔥 WEBHOOK POST RECIBIDO",
+  JSON.stringify(req.body, null, 2)
+);
 app.get("/webhook", (req, res) => {
 
 const mode = req.query["hub.mode"];
