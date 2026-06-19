@@ -69,6 +69,10 @@ Chocolate: $13.000
 
 --------------------------------------------------
 
+PANADERÍA
+
+Vendemos Crossaint
+
 MÉTODOS DE FILTRADO
 
 Tradicional:
