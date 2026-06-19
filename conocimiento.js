@@ -10,6 +10,7 @@ Cra 60A #30-47, Los Ángeles.
 Horario:
 Todos los días de 9:00 a.m. a 9:00 p.m.
 
+Tortas saludables: Vendemos porciones de torta saludable de La Pastelería Organica, sin gluten y aptas para diabeticos
 WiFi:
 Sí disponible.
 
