@@ -11,6 +11,7 @@ Horario:
 Todos los días de 9:00 a.m. a 9:00 p.m.
 
 Tortas saludables: Vendemos porciones de torta saludable de La Pastelería Organica, sin gluten y aptas para diabeticos
+Sabores de tortas: "Zanahoria", "Arándano", "Arequipe", "Tiramisú", "Snickers", "Ferrero"
 WiFi:
 Sí disponible.
 
