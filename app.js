@@ -1,4 +1,4 @@
-const enviarWhatsApp = require("./whatsapp");
+const { enviarWhatsApp, enviarPDF } = require("./whatsapp");
 const express = require("express");
 const respuestas = require("./respuestas");
 const preguntarGemini = require("./gemini");
@@ -7,6 +7,10 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static("public"));
+app.use(
+  "/media",
+  express.static("media")
+);
 
 const VERIFY_TOKEN = "kona_verify_2026";
 
@@ -59,15 +63,28 @@ app.post("/webhook", async (req, res) => {
     const respuesta =
       await obtenerRespuesta(texto);
 
-    const textoRespuesta =
-      typeof respuesta === "object"
-        ? respuesta.texto
-        : respuesta;
+    if (
+  typeof respuesta === "object" &&
+  respuesta.tipo === "pdf"
+) {
 
-    await enviarWhatsApp(
-      numero,
-      textoRespuesta
-    );
+  await enviarWhatsApp(
+    numero,
+    respuesta.texto
+  );
+
+  await enviarPDF(numero);
+
+} else {
+
+  await enviarWhatsApp(
+    numero,
+    typeof respuesta === "object"
+      ? respuesta.texto
+      : respuesta
+  );
+
+}
 
     return res.sendStatus(200);
 
