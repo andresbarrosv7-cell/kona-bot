@@ -1,3 +1,4 @@
+const clientes = require("./clientes");
 const { enviarWhatsApp, enviarPDF } = require("./whatsapp");
 const express = require("express");
 const respuestas = require("./respuestas");
@@ -15,11 +16,17 @@ const VERIFY_TOKEN = "kona_verify_2026";
 // WEBHOOK META
 
 app.get("/webhook", (req, res) => {
-
+  const numero = mensaje.from;
+  if (!clientes[numero]) {
+  clientes[numero] = {
+    saludado: false
+  };
+}
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
-
+  const respuesta =
+  await obtenerRespuesta(texto, numero);
   if (
     mode === "subscribe" &&
     token === VERIFY_TOKEN
@@ -101,22 +108,40 @@ app.post("/webhook", async (req, res) => {
 
 // LÓGICA DEL BOT
 
-async function obtenerRespuesta(mensaje) {
+async function obtenerRespuesta(mensaje, numero) {
 
 mensaje = (mensaje || "").toLowerCase();
 
 // SALUDO
 
 const saludos = [
-"hola",
-"buenas",
-"buenos dias",
-"buenas tardes",
-"buenas noches"
+  "hola",
+  "buenas",
+  "buenos dias",
+  "buenas tardes",
+  "buenas noches"
 ];
 
 if (saludos.includes(mensaje.trim())) {
-return respuestas.bienvenida;
+
+  if (!clientes[numero].saludado) {
+
+    clientes[numero].saludado = true;
+
+    return respuestas.bienvenida;
+
+  }
+
+  const respuestasCortas = [
+  "☕ Hola nuevamente. ¿Qué te provoca hoy?",
+  "☕ Bienvenido de nuevo. ¿Buscas café, postres o nuestro menú?",
+  "☕ Qué bueno tenerte de vuelta. ¿Cómo puedo ayudarte?",
+  "☕ Aquí estoy. ¿Qué deseas consultar?"
+];
+
+return respuestasCortas[
+  Math.floor(Math.random() * respuestasCortas.length)
+];
 }
 
 // MENÚ PDF
