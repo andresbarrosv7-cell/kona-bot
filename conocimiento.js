@@ -69,6 +69,10 @@ Chocolate: $13.000
 
 --------------------------------------------------
 
+DOMICILIOS
+
+Los domicilios los gestionamos a través de la plataforma Uber y es variable dependiendo de la zona. Te trasladaremos con la persona encargada.
+
 PANADERÍA
 
 Vendemos Crossant
