@@ -7,9 +7,7 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static("public"));
-app.use(
-  "/media",
-  express.static("media")
+app.use("/media", express.static("media")
 );
 
 const VERIFY_TOKEN = "kona_verify_2026";
