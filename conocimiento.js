@@ -69,15 +69,14 @@ Tradicional:
 Aeropress
 V60
 Prensa Francesa
+April
+Chemex
+Origami
 
 1 taza: $10.000
 2 tazas: $18.000
 
 Exótico:
-
-April
-Chemex
-Origami
 
 1 taza: $13.000
 2 tazas: $25.000
