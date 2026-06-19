@@ -8,25 +8,18 @@ const app = express();
 
 app.use(express.json());
 app.use(express.static("public"));
-app.use("/media", express.static("media")
-);
+app.use("/media", express.static("media"));
 
 const VERIFY_TOKEN = "kona_verify_2026";
 
 // WEBHOOK META
 
 app.get("/webhook", (req, res) => {
-  const numero = mensaje.from;
-  if (!clientes[numero]) {
-  clientes[numero] = {
-    saludado: false
-  };
-}
+
   const mode = req.query["hub.mode"];
   const token = req.query["hub.verify_token"];
   const challenge = req.query["hub.challenge"];
-  const respuesta =
-  await obtenerRespuesta(texto, numero);
+
   if (
     mode === "subscribe" &&
     token === VERIFY_TOKEN
@@ -59,6 +52,12 @@ app.post("/webhook", async (req, res) => {
     const numero = mensaje.from;
     const texto = mensaje.text?.body || "";
 
+    if (!clientes[numero]) {
+      clientes[numero] = {
+        saludado: false
+      };
+    }
+
     console.log(
       "📩 Mensaje recibido:",
       numero,
@@ -66,30 +65,33 @@ app.post("/webhook", async (req, res) => {
     );
 
     const respuesta =
-      await obtenerRespuesta(texto);
+      await obtenerRespuesta(
+        texto,
+        numero
+      );
 
     if (
-  typeof respuesta === "object" &&
-  respuesta.tipo === "pdf"
-) {
+      typeof respuesta === "object" &&
+      respuesta.tipo === "pdf"
+    ) {
 
-  await enviarWhatsApp(
-    numero,
-    respuesta.texto
-  );
+      await enviarWhatsApp(
+        numero,
+        respuesta.texto
+      );
 
-  await enviarPDF(numero);
+      await enviarPDF(numero);
 
-} else {
+    } else {
 
-  await enviarWhatsApp(
-    numero,
-    typeof respuesta === "object"
-      ? respuesta.texto
-      : respuesta
-  );
+      await enviarWhatsApp(
+        numero,
+        typeof respuesta === "object"
+          ? respuesta.texto
+          : respuesta
+      );
 
-}
+    }
 
     return res.sendStatus(200);
 
@@ -108,124 +110,172 @@ app.post("/webhook", async (req, res) => {
 
 // LÓGICA DEL BOT
 
-async function obtenerRespuesta(mensaje, numero) {
+async function obtenerRespuesta(
+  mensaje,
+  numero
+) {
 
-mensaje = (mensaje || "").toLowerCase();
+  mensaje = (
+    mensaje || ""
+  ).toLowerCase();
 
-// SALUDO
+  const saludos = [
+    "hola",
+    "buenas",
+    "buenos dias",
+    "buenas tardes",
+    "buenas noches"
+  ];
 
-const saludos = [
-  "hola",
-  "buenas",
-  "buenos dias",
-  "buenas tardes",
-  "buenas noches"
-];
+  // SALUDOS HUMANIZADOS
 
-if (saludos.includes(mensaje.trim())) {
+  if (
+    saludos.includes(
+      mensaje.trim()
+    )
+  ) {
 
-  if (!clientes[numero].saludado) {
+    if (
+      !clientes[numero].saludado
+    ) {
 
-    clientes[numero].saludado = true;
+      clientes[numero].saludado = true;
 
-    return respuestas.bienvenida;
+      return respuestas.bienvenida;
+
+    }
+
+    const respuestasCortas = [
+      "☕ Hola nuevamente. ¿Qué te provoca hoy?",
+      "☕ Bienvenido de nuevo. ¿Buscas café, postres o nuestro menú?",
+      "☕ Qué bueno tenerte de vuelta. ¿Cómo puedo ayudarte?",
+      "☕ Aquí estoy. ¿Qué deseas consultar?"
+    ];
+
+    return respuestasCortas[
+      Math.floor(
+        Math.random() *
+        respuestasCortas.length
+      )
+    ];
 
   }
 
-  const respuestasCortas = [
-  "☕ Hola nuevamente. ¿Qué te provoca hoy?",
-  "☕ Bienvenido de nuevo. ¿Buscas café, postres o nuestro menú?",
-  "☕ Qué bueno tenerte de vuelta. ¿Cómo puedo ayudarte?",
-  "☕ Aquí estoy. ¿Qué deseas consultar?"
-];
+  // MENÚ PDF
 
-return respuestasCortas[
-  Math.floor(Math.random() * respuestasCortas.length)
-];
+  if (
+    mensaje.includes("menu") ||
+    mensaje.includes("menú") ||
+    mensaje.includes("carta")
+  ) {
+
+    return {
+      tipo: "pdf",
+      archivo: "./media/menu.pdf",
+      texto:
+        "☕ Te compartimos nuestro menú. Si tienes alguna pregunta estaremos encantados de ayudarte."
+    };
+
+  }
+
+  // DOMICILIOS
+
+  if (
+    mensaje.includes("domicilio") ||
+    mensaje.includes("domicilios") ||
+    mensaje.includes("envio") ||
+    mensaje.includes("envío") ||
+    mensaje.includes("envios") ||
+    mensaje.includes("envíos")
+  ) {
+
+    return respuestas.domicilios;
+
+  }
+
+  // RESERVAS
+
+  if (
+    mensaje.includes("reserva") ||
+    mensaje.includes("reservar") ||
+    mensaje.includes("reservas")
+  ) {
+
+    return respuestas.reservas;
+
+  }
+
+  // ESCALAR A HUMANO
+
+  if (
+    mensaje.includes("queja") ||
+    mensaje.includes("reclamo") ||
+    mensaje.includes("gerente") ||
+    mensaje.includes("administrador") ||
+    mensaje.includes("factura") ||
+    mensaje.includes("empleo")
+  ) {
+
+    return respuestas.humano;
+
+  }
+
+  // GEMINI
+
+  try {
+
+    console.log(
+      "🤖 Consultando Gemini:",
+      mensaje
+    );
+
+    return await preguntarGemini(
+      mensaje
+    );
+
+  } catch (error) {
+
+    console.error(
+      "❌ Error Gemini:",
+      error
+    );
+
+    return "☕ En este momento estoy teniendo una alta demanda.\n\nMientras tanto puedo ayudarte con:\n\n📍 Dirección\n🕒 Horario\n📋 Menú\n🚚 Domicilios\n📅 Reservas";
+
+  }
+
 }
 
-// MENÚ PDF
-
-if (
-mensaje.includes("menu") ||
-mensaje.includes("menú") ||
-mensaje.includes("carta")
-) {
-return {
-tipo: "pdf",
-archivo: "./media/menu.pdf",
-texto:
-"☕ Te compartimos nuestro menú. Si tienes alguna pregunta estaremos encantados de ayudarte."
-};
-}
-
-// DOMICILIOS
-
-if (
-mensaje.includes("domicilio") ||
-mensaje.includes("domicilios") ||
-mensaje.includes("envio") ||
-mensaje.includes("envío") ||
-mensaje.includes("envios") ||
-mensaje.includes("envíos")
-) {
-return respuestas.domicilios;
-}
-
-// RESERVAS
-
-if (
-mensaje.includes("reserva") ||
-mensaje.includes("reservar") ||
-mensaje.includes("reservas")
-) {
-return respuestas.reservas;
-}
-
-// ESCALAR A HUMANO
-
-if (
-mensaje.includes("queja") ||
-mensaje.includes("reclamo") ||
-mensaje.includes("gerente") ||
-mensaje.includes("administrador") ||
-mensaje.includes("factura") ||
-mensaje.includes("empleo")
-) {
-return respuestas.humano;
-}
-
-// GEMINI
-
-try {
-
-  console.log("🤖 Consultando Gemini:", mensaje);
-
-  return await preguntarGemini(mensaje);
-
-} catch (error) {
-
-  console.error("Error Gemini:", error);
-
-  return "☕ En este momento estoy teniendo una alta demanda.\n\nMientras tanto puedo ayudarte con:\n\n📍 Dirección\n🕒 Horario\n📋 Menú\n🚚 Domicilios\n📅 Reservas";
-
-}
-}
 // HOME
 
 app.get("/", (req, res) => {
-res.send("☕ KONA BOT funcionando");
+
+  res.send(
+    "☕ KONA BOT funcionando"
+  );
+
 });
 
 // PRUEBAS
 
 app.get("/probar", async (req, res) => {
 
-const mensaje = req.query.mensaje || "";
+  const mensaje =
+    req.query.mensaje || "";
 
-const respuesta = await obtenerRespuesta(mensaje);
+  if (!clientes["prueba"]) {
+    clientes["prueba"] = {
+      saludado: false
+    };
+  }
 
-res.json(respuesta);
+  const respuesta =
+    await obtenerRespuesta(
+      mensaje,
+      "prueba"
+    );
+
+  res.json(respuesta);
 
 });
 
@@ -235,14 +285,30 @@ app.post("/chat", async (req, res) => {
 
   try {
 
-    const mensaje = req.body.mensaje || "";
+    const mensaje =
+      req.body.mensaje || "";
 
-    const respuesta = await obtenerRespuesta(mensaje);
+    if (!clientes["web"]) {
+      clientes["web"] = {
+        saludado: false
+      };
+    }
 
-    if (typeof respuesta === "object") {
+    const respuesta =
+      await obtenerRespuesta(
+        mensaje,
+        "web"
+      );
+
+    if (
+      typeof respuesta === "object"
+    ) {
+
       return res.json({
-        respuesta: respuesta.texto
+        respuesta:
+          respuesta.texto
       });
+
     }
 
     res.json({
@@ -251,7 +317,10 @@ app.post("/chat", async (req, res) => {
 
   } catch (error) {
 
-    console.error("Error en /chat:", error);
+    console.error(
+      "Error en /chat:",
+      error
+    );
 
     res.status(500).json({
       respuesta:
@@ -264,8 +333,13 @@ app.post("/chat", async (req, res) => {
 
 // INICIO DEL SERVIDOR
 
-const PORT = process.env.PORT || 3000;
+const PORT =
+  process.env.PORT || 3000;
 
 app.listen(PORT, () => {
-console.log(`☕ KONA BOT iniciado en puerto ${PORT}`);
+
+  console.log(
+    `☕ KONA BOT iniciado en puerto ${PORT}`
+  );
+
 });
