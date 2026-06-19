@@ -159,24 +159,18 @@ return respuestas.humano;
 
 try {
 
-```
-console.log("🤖 Consultando Gemini:", mensaje);
+  console.log("🤖 Consultando Gemini:", mensaje);
 
-return await preguntarGemini(mensaje);
-```
+  return await preguntarGemini(mensaje);
 
 } catch (error) {
 
-```
-console.error("Error Gemini:", error);
+  console.error("Error Gemini:", error);
 
-return "☕ En este momento estoy teniendo una alta demanda.\n\nMientras tanto puedo ayudarte con:\n\n📍 Dirección\n🕒 Horario\n📋 Menú\n🚚 Domicilios\n📅 Reservas";
-```
+  return "☕ En este momento estoy teniendo una alta demanda.\n\nMientras tanto puedo ayudarte con:\n\n📍 Dirección\n🕒 Horario\n📋 Menú\n🚚 Domicilios\n📅 Reservas";
 
 }
-
 }
-
 // HOME
 
 app.get("/", (req, res) => {
@@ -199,38 +193,32 @@ res.json(respuesta);
 
 app.post("/chat", async (req, res) => {
 
-try {
+  try {
 
-```
-const mensaje = req.body.mensaje || "";
+    const mensaje = req.body.mensaje || "";
 
-const respuesta = await obtenerRespuesta(mensaje);
+    const respuesta = await obtenerRespuesta(mensaje);
 
-if (typeof respuesta === "object") {
+    if (typeof respuesta === "object") {
+      return res.json({
+        respuesta: respuesta.texto
+      });
+    }
 
-  return res.json({
-    respuesta: respuesta.texto
-  });
+    res.json({
+      respuesta
+    });
 
-}
+  } catch (error) {
 
-res.json({
-  respuesta
-});
-```
+    console.error("Error en /chat:", error);
 
-} catch (error) {
+    res.status(500).json({
+      respuesta:
+        "☕ Ocurrió un error procesando tu mensaje."
+    });
 
-```
-console.error("Error en /chat:", error);
-
-res.status(500).json({
-  respuesta:
-    "☕ Ocurrió un error procesando tu mensaje."
-});
-```
-
-}
+  }
 
 });
 
