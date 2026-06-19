@@ -25,6 +25,11 @@ Métodos de pago:
 - Transferencias
 
 --------------------------------------------------
+TIPOS DE LECHE
+
+Leche deslactosada
+Leche de Avena
+Leche de Almendras
 
 BEBIDAS CALIENTES
 

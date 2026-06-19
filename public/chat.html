@@ -95,10 +95,25 @@ async function enviar(){
     const data =
     await respuesta.json();
 
-    chat.innerHTML +=
-    `<div class="bot">
-        <b>KONA BOT:</b> ${data.respuesta}
-    </div>`;
+    let htmlBot = `
+<div class="bot">
+    <b>KONA BOT:</b> ${data.respuesta}
+</div>
+`;
+
+if (data.pdf) {
+
+    htmlBot += `
+    <div class="bot">
+        <a href="${data.pdf}" target="_blank">
+            📄 Ver menú
+        </a>
+    </div>
+    `;
+
+}
+
+chat.innerHTML += htmlBot;
 
     chat.scrollTop =
     chat.scrollHeight;

@@ -301,16 +301,25 @@ app.post("/chat", async (req, res) => {
       );
 
     if (
-      typeof respuesta === "object"
-    ) {
+  typeof respuesta === "object" &&
+  respuesta.tipo === "pdf"
+) {
 
-      return res.json({
-        respuesta:
-          respuesta.texto
-      });
+  return res.json({
+    respuesta: respuesta.texto,
+    pdf: "/media/menu.pdf"
+  });
 
-    }
+}
 
+
+if (typeof respuesta === "object") {
+
+  return res.json({
+    respuesta: respuesta.texto
+  });
+
+}
     res.json({
       respuesta
     });
